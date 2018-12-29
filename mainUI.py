@@ -1,7 +1,10 @@
 import sys
+import os
 
 import cv2
 import numpy as np
+import pickle
+
 from ImageData import ImageData
 from CustomQLabel import CustomQLabel
 from PyQt5 import QtCore,QtWidgets
@@ -17,6 +20,7 @@ class MainUI(QDialog):
     super(MainUI,self).__init__()
     loadUi('mainUI.ui',self)
     self.image = None
+    self.imageName = None
     self.imageData = None
     self.kpImage = None
     self.scanned = False
@@ -32,7 +36,8 @@ class MainUI(QDialog):
     options |= QFileDialog.DontUseNativeDialog
     filename, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "", "Images (*.jpg *.png)",options=options)
     if filename:
-      print(filename)
+      self.imageName = os.path.splitext(os.path.basename(filename))[0]
+      print(self.imageName)
     self.loadImage(filename)
     self.scanButton.setEnabled(True)
     self.addButton.setEnabled(True)
@@ -100,6 +105,14 @@ class MainUI(QDialog):
   def saveClicked(self):
     self.imageData=self.image
     self.imageData.setInterestPoints(self.imgLabel.rectangles)
+    outfile=open(self.imageName,'wb')
+    index=[]
+    for point in self.imageData.kp:
+      temp=(point.pt, point.size, point.angle, point.response, point.octave, point.class_id)
+      index.append(temp)
+    self.imageData.kp=index
+    pickle.dump(self.imageData, outfile)
+    outfile.close()
     print(self.imageData.kp)
     print(self.imageData.desc)
     print(self.imageData.ipoints)

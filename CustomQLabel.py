@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QLabel,QApplication
+from PyQt5.QtWidgets import QLabel,QApplication,QFileDialog
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui 
+
 
 class Rectangle:
     def __init__(self,point1,point2):
@@ -19,6 +20,7 @@ class CustomQLabel(QLabel):
         self.inside = False
         self.active = False
         self.rectangles = []
+        self.rectImgPath = []
         self.show()
 
     def activate(self):
@@ -60,6 +62,11 @@ class CustomQLabel(QLabel):
             self.deactivate(False)
             QApplication.setOverrideCursor(QtCore.Qt.ArrowCursor)
             self.update()
+            options = QFileDialog.Options()
+            options |= QFileDialog.DontUseNativeDialog
+            filename, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "", "Images (*.jpg *.png)",options=options)
+            self.rectImgPath.append(filename)
+            print(self.rectImgPath)
 
     def enterEvent(self, event):
         QLabel.enterEvent(self, event)

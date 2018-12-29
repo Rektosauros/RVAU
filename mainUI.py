@@ -38,6 +38,9 @@ class MainUI(QDialog):
     if filename:
       self.imageName = os.path.splitext(os.path.basename(filename))[0]
       print(self.imageName)
+      with open(filename, "rb") as imageFile:
+        f = imageFile.read()
+        self.imgByteArray = bytearray(f)
     self.loadImage(filename)
     self.scanButton.setEnabled(True)
     self.addButton.setEnabled(True)
@@ -82,7 +85,7 @@ class MainUI(QDialog):
     keypoints=orb.detect(self.image, None)
     keypoints, descriptors = orb.compute(self.image, keypoints)
     self.kpImage = cv2.drawKeypoints(self.image, keypoints, self.image, color=(0,255,0), flags=0)
-    self.image = ImageData(keypoints, descriptors)
+    self.imageData = ImageData(keypoints, descriptors, self.imgByteArray)
     self.displayScanedImage()
     self.scanned = True
     if self.addedInterestPoint:
@@ -103,8 +106,7 @@ class MainUI(QDialog):
     self.imgLabel.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
 
   def saveClicked(self):
-    self.imageData=self.image
-    self.imageData.setInterestPoints(self.imgLabel.rectangles)
+    self.imageData.setInterestPoints(self.imgLabel.interestPoints)
     outfile=open(self.imageName,'wb')
     index=[]
     for point in self.imageData.kp:

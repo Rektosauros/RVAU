@@ -1,4 +1,6 @@
 from PyQt5.QtWidgets import QLabel,QApplication,QFileDialog
+from InterestPoint import InterestPoint
+
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui 
 
@@ -21,6 +23,7 @@ class CustomQLabel(QLabel):
         self.active = False
         self.rectangles = []
         self.rectImgPath = []
+        self.interestPoints = []
         self.show()
 
     def activate(self):
@@ -56,7 +59,8 @@ class CustomQLabel(QLabel):
 
     def mouseReleaseEvent(self, event):
         if self.inside and self.active and self.pressed:
-            self.rectangles.append(Rectangle(self.begin,self.end))
+            #self.rectangles.append(Rectangle(self.begin,self.end))
+            interestPoint = InterestPoint(Rectangle(self.begin, self.end))
             self.parent().parent().notifyAddedInterestPoint()
             print("New Interest point at:",self.begin,self.end)
             self.deactivate(False)
@@ -65,8 +69,13 @@ class CustomQLabel(QLabel):
             options = QFileDialog.Options()
             options |= QFileDialog.DontUseNativeDialog
             filename, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "", "Images (*.jpg *.png)",options=options)
-            self.rectImgPath.append(filename)
-            print(self.rectImgPath)
+            with open(filename, "rb") as imageFile:
+                f = imageFile.read()
+                self.imgByteArray = bytearray(f)
+            interestPoint.addImage(self.imgByteArray)
+            self.interestPoints.append(interestPoint)
+            #self.rectImgPath.append(filename)
+            print(self.interestPoints)
 
     def enterEvent(self, event):
         QLabel.enterEvent(self, event)

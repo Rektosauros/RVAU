@@ -40,6 +40,7 @@ class MainUI(QDialog):
     if filename:
       self.imageName = os.path.splitext(os.path.basename(filename))[0]
       print(self.imageName)
+      print(filename)
       with open(filename, "rb") as imageFile:
         f = imageFile.read()
         self.imgByteArray = bytearray(f)
@@ -59,6 +60,7 @@ class MainUI(QDialog):
     self.scanned=False
     self.addedInterestPoint=False
     self.image=cv2.imread(fname)
+    print(fname)
     self.imgLabel = CustomQLabel(self.layoutWidget1)
     sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
     sizePolicy.setHorizontalStretch(0)

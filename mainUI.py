@@ -22,6 +22,8 @@ class MainUI(QDialog):
     self.image = None
     self.imageName = None
     self.imageData = None
+    self.descriptors = None
+    self.keypoints = None
     self.kpImage = None
     self.scanned = False
     self.addedInterestPoint = False
@@ -82,18 +84,16 @@ class MainUI(QDialog):
 
   def scanClicked(self):
     orb = cv2.ORB_create()
-    keypoints=orb.detect(self.image, None)
-    keypoints, descriptors = orb.compute(self.image, keypoints)
-    self.kpImage = cv2.drawKeypoints(self.image, keypoints, self.image, color=(0,255,0), flags=0)
-    self.imageData = ImageData(keypoints, descriptors, self.imgByteArray)
-    self.displayScanedImage()
+    self.keypoints=orb.detect(self.image, None)
+    self.keypoints, self.descriptors = orb.compute(self.image, self.keypoints)
+    self.kpImage = cv2.drawKeypoints(self.image, self.keypoints, self.image, color=(0,255,0), flags=0)
+    self.displayScannedImage()
     self.scanned = True
     if self.addedInterestPoint:
       self.saveButton.setEnabled(True)
 
-  def displayScanedImage(self):
+  def displayScannedImage(self):
     qformat = QImage.Format_Indexed8
-
     if len(self.kpImage.shape)==3: #rows[0],cols[1],channels[2]
       if(self.kpImage.shape[2])==4:
         qformat=QImage.Format_RGBA8888
@@ -106,6 +106,7 @@ class MainUI(QDialog):
     self.imgLabel.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
 
   def saveClicked(self):
+    self.imageData = ImageData(self.keypoints, self.descriptors, self.imgByteArray)
     self.imageData.setInterestPoints(self.imgLabel.interestPoints)
     outfile=open(self.imageName,'wb')
     index=[]
@@ -117,13 +118,14 @@ class MainUI(QDialog):
     outfile.close()
     print(self.imageData.kp)
     print(self.imageData.desc)
-    print(self.imageData.ipoints)
+    for ipoint in self.imageData.ipoints:
+      print(ipoint)
     
  
 
 
 app=QApplication (sys.argv)
 window=MainUI()
-window.setWindowTitle('Tutorial')
+window.setWindowTitle('AR Preparation Tool')
 window.show()
 sys.exit(app.exec_())

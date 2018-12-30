@@ -9,7 +9,6 @@ class ImageData:
     self.kp = keypoints
     self.desc = descriptors
     self.ipoints = []
-
   def setInterestPoints(self,rectangles):
     self.ipoints = rectangles
   

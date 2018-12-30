@@ -62,17 +62,13 @@ class CustomQLabel(QLabel):
             self.rectangles.append(Rectangle(self.begin,self.end))
             interestPoint = InterestPoint(self.begin.x(),self.begin.y(),self.end.x(),self.end.y())
             self.parent().parent().notifyAddedInterestPoint()
-            print("New Interest point at:",self.begin,self.end)
             self.deactivate(False)
             QApplication.setOverrideCursor(QtCore.Qt.ArrowCursor)
             self.update()
             self.imageUi = ImageUI()
             self.imageUi.exec_()
-            print("HERE")
-            self.interestPoints = self.imageUi.imgByteArray
-
-            print(self.interestPoints)
-            print(len(self.interestPoints))
+            interestPoint.imagesByteArray=self.imageUi.imgByteArray
+            self.interestPoints.append(interestPoint)
 
     def enterEvent(self, event):
         QLabel.enterEvent(self, event)

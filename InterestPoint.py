@@ -12,10 +12,11 @@ class InterestPoint:
     self.imagesByteArray = []
 
   def __str__(self):
-      return "Interest Point at rectangle: "+"("+str(self.x1)+","+str(self.y1)+"), ("+str(self.x2)+","+str(self.y2)+")"
+      return "Interest Point at rectangle: "+"("+str(self.x1)+","+str(self.y1)+"), ("+str(self.x2)+","+str(self.y2)+") - with "+str(len(self.imagesByteArray))+" images"
 
   def addImage(self,image):
     self.imagesByteArray.append(image)
+    print(str(len(self.imagesByteArray)))
 
   
   

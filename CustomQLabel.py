@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QLabel,QApplication,QFileDialog
 from InterestPoint import InterestPoint
+from addImageUI import ImageUI
 
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui 
@@ -65,15 +66,13 @@ class CustomQLabel(QLabel):
             self.deactivate(False)
             QApplication.setOverrideCursor(QtCore.Qt.ArrowCursor)
             self.update()
-            options = QFileDialog.Options()
-            options |= QFileDialog.DontUseNativeDialog
-            filename, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "", "Images (*.jpg *.png)",options=options)
-            with open(filename, "rb") as imageFile:
-                f = imageFile.read()
-                self.imgByteArray = bytearray(f)
-            interestPoint.addImage(self.imgByteArray)
-            self.interestPoints.append(interestPoint)
+            self.imageUi = ImageUI()
+            self.imageUi.exec_()
+            print("HERE")
+            self.interestPoints = self.imageUi.imgByteArray
+
             print(self.interestPoints)
+            print(len(self.interestPoints))
 
     def enterEvent(self, event):
         QLabel.enterEvent(self, event)

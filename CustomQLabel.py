@@ -67,7 +67,7 @@ class CustomQLabel(QLabel):
             self.update()
             self.imageUi = ImageUI()
             self.imageUi.exec_()
-            interestPoint.imagesByteArray=self.imageUi.imgByteArray
+            interestPoint.imagesArray=self.imageUi.image
             self.interestPoints.append(interestPoint)
 
     def enterEvent(self, event):

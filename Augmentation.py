@@ -11,14 +11,20 @@ def getData():
     root.withdraw()
     filename = askopenfilename(title = "Select Preparation Data")
     with open(filename, 'rb') as f:
+        global imagedata
         imagedata = pickle.load(f)
         f.close()
-    print(imagedata.kp)
-    print(imagedata.desc)
+    #print(imagedata.kp)
+    #print(imagedata.desc)
     for ipoint in imagedata.ipoints:
         print(ipoint)
 
 def captureVideo():
+    #cv2.imshow('image',imagedata.image)
+    #while(True):
+    #    if cv2.waitKey(1) & 0xFF == ord('q'):
+    #        break
+    #return
     cap = cv2.VideoCapture(0)
     while(True):
         ret, frame = cap.read()

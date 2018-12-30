@@ -39,11 +39,6 @@ class MainUI(QDialog):
     filename, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "", "Images (*.jpg *.png)",options=options)
     if filename:
       self.imageName = os.path.splitext(os.path.basename(filename))[0]
-      print(self.imageName)
-      print(filename)
-      with open(filename, "rb") as imageFile:
-        f = imageFile.read()
-        self.imgByteArray = bytearray(f)
     self.loadImage(filename)
     self.scanButton.setEnabled(True)
     self.addButton.setEnabled(True)
@@ -60,7 +55,6 @@ class MainUI(QDialog):
     self.scanned=False
     self.addedInterestPoint=False
     self.image=cv2.imread(fname)
-    print(fname)
     self.imgLabel = CustomQLabel(self.layoutWidget1)
     sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
     sizePolicy.setHorizontalStretch(0)
@@ -110,7 +104,7 @@ class MainUI(QDialog):
     self.imgLabel.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
 
   def saveClicked(self):
-    self.imageData = ImageData(self.keypoints, self.descriptors, self.imgByteArray)
+    self.imageData = ImageData(self.keypoints, self.descriptors, self.image)
     self.imageData.setInterestPoints(self.imgLabel.interestPoints)
     outfile=open(self.imageName,'wb')
     index=[]

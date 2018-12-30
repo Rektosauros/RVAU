@@ -56,6 +56,8 @@ class MainUI(QDialog):
       self.saveButton.setEnabled(True)
 
   def loadImage(self, fname):
+    self.scanned=False
+    self.addedInterestPoint=False
     self.image=cv2.imread(fname)
     self.imgLabel = CustomQLabel(self.layoutWidget1)
     sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)

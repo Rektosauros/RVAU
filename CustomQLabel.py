@@ -23,7 +23,6 @@ class CustomQLabel(QLabel):
         self.inside = False
         self.active = False
         self.rectangles = []
-        self.rectImgPath = []
         self.interestPoints = []
         self.show()
 
@@ -60,8 +59,8 @@ class CustomQLabel(QLabel):
 
     def mouseReleaseEvent(self, event):
         if self.inside and self.active and self.pressed:
-            #self.rectangles.append(Rectangle(self.begin,self.end))
-            interestPoint = InterestPoint(Rectangle(self.begin, self.end))
+            self.rectangles.append(Rectangle(self.begin,self.end))
+            interestPoint = InterestPoint(self.begin.x(),self.begin.y(),self.end.x(),self.end.y())
             self.parent().parent().notifyAddedInterestPoint()
             print("New Interest point at:",self.begin,self.end)
             self.deactivate(False)
@@ -71,6 +70,7 @@ class CustomQLabel(QLabel):
             self.imageUi.exec_()
             print("HERE")
             self.interestPoints = self.imageUi.imgByteArray
+
             print(self.interestPoints)
             print(len(self.interestPoints))
 

@@ -29,36 +29,41 @@ def captureVideo():
     #    if cv2.waitKey(1) & 0xFF == ord('q'):
     #        break
     #return
-    orb = cv2.ORB_create()
-    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+    sift = cv2.xfeatures2d.SIFT_create()
+    bf = cv2.BFMatcher()
     kp1 = getCVKeypoints(imagedata.kp)
     cap = cv2.VideoCapture(0)
     while(True):
         ret, frame = cap.read()
         if ret:
             # Our operations on the frame come here    
-            kp2, frame_desc = orb.detectAndCompute(frame,None)
-            matches = bf.match(imagedata.desc,frame_desc)
-            matches = sorted(matches, key = lambda x:x.distance)
+            kp2, frame_desc = sift.detectAndCompute(frame,None)
+            if(kp2 is None or frame_desc is None):
+                continue
+            matches = bf.knnMatch(imagedata.desc,frame_desc, k=2)
+            # Apply ratio test
+            good = []
+            for m,n in matches:
+                if m.distance < 0.75*n.distance:
+                    good.append(m)
             # Do Homeography here
-            if len(matches)>MIN_MATCH_COUNT:
-                src_pts = np.float32([ kp1[m.queryIdx].pt for m in matches ]).reshape(-1,1,2)
-                dst_pts = np.float32([ kp2[m.trainIdx].pt for m in matches ]).reshape(-1,1,2)
-
+            if len(good)>MIN_MATCH_COUNT:
+                src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
+                dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
                 M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
                 matchesMask = mask.ravel().tolist()
                 slices,h,w = imagedata.image.shape
                 pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
                 dst = cv2.perspectiveTransform(pts,M)
                 frame = cv2.polylines(frame,[np.int32(dst)],True,255,3, cv2.LINE_AA)
-                draw_params = dict(matchColor = (0,255,0), # draw matches in green color
-                singlePointColor = None,
-                matchesMask = matchesMask, # draw only inliers
-                flags = 2)
-                frame = cv2.drawMatches(imagedata.image,kp1,frame,kp2,matches,0,**draw_params)
             else:
-                print("Not enough matches are found - %d/%d" % (len(matches),MIN_MATCH_COUNT))
+                print("Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
                 matchesMask = None
+            draw_params = dict(matchColor = (0,255,0), # draw matches in green color
+            singlePointColor = None,
+            matchesMask = matchesMask, # draw only inliers
+            flags = 2)
+            frame = cv2.drawMatches(imagedata.image,kp1,frame,kp2,good,0,**draw_params)
             cv2.imshow('AR Detection',frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                         break

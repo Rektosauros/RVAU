@@ -46,7 +46,5 @@ class ImageUI(QDialog):
     self.imgNameLineEdit.setDisabled(True)
     self.addImgButton.setDisabled(False)
 
-
-
   def closeClicked(self):
     self.close()

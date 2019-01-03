@@ -81,9 +81,8 @@ class MainUI(QDialog):
     
 
   def scanClicked(self):
-    orb = cv2.ORB_create()
-    self.keypoints=orb.detect(self.image, None)
-    self.keypoints, self.descriptors = orb.compute(self.image, self.keypoints)
+    sift = cv2.xfeatures2d.SIFT_create()
+    self.keypoints, self.descriptors =  sift.detectAndCompute(self.image,None)
     self.kpImage = cv2.drawKeypoints(self.image, self.keypoints, self.image, color=(0,255,0), flags=0)
     self.displayScannedImage()
     self.scanned = True

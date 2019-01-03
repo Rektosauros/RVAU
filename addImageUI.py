@@ -19,30 +19,34 @@ class ImageUI(QDialog):
     super(ImageUI,self).__init__()
     loadUi('addImage.ui',self)
     self.image = []
-    self.imgNames = []
+    self.IPName = None
     if len(self.image)==0:
+      self.addImgButton.setDisabled(True)
       self.closeButton.setDisabled(True)
       self.setWindowFlag(QtCore.Qt.WindowCloseButtonHint, False)
       self.noImg = True
+    self.noName = True
     self.addImgButton.clicked.connect(self.addClicked)
     self.closeButton.clicked.connect(self.closeClicked)
+    self.addButton.clicked.connect(self.addNameClicked)
 
   @pyqtSlot()
   def addClicked(self):
     options = QFileDialog.Options()
     options |= QFileDialog.DontUseNativeDialog
     filename, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "", "Images (*.jpg *.png)",options=options)
-    if self.imgNameLineEdit.text() == "":
-      QMessageBox.question(self, "Message", "insert an image name to add a new image to the interest point", QMessageBox.Ok, QMessageBox.Ok)
-    else:
-      print(self.imgNameLineEdit.text())
-      self.imgNames.append(self.imgNameLineEdit.text())
-      self.image.append(cv2.imread(filename))
-      print("New image added to interest point: "+ filename)
-      self.imgNameLineEdit.setText("")
+    self.image.append(cv2.imread(filename))
+    print("New image added to interest point: "+ filename)
     if self.noImg == True:
       self.noImg= False
       self.closeButton.setDisabled(False)
+
+  def addNameClicked(self):
+    self.IPName = self.imgNameLineEdit.text()
+    self.imgNameLineEdit.setDisabled(True)
+    self.addImgButton.setDisabled(False)
+
+
 
   def closeClicked(self):
     self.close()

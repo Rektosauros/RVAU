@@ -10,7 +10,7 @@ class InterestPoint:
     self.y1=y1
     self.y2=y2
     self.imagesArray = []
-    self.imageNamesArray = []
+    self.InterestPointName = None
 
   def __str__(self):
       return "Interest Point at rectangle: "+"("+str(self.x1)+","+str(self.y1)+"), ("+str(self.x2)+","+str(self.y2)+") - with "+str(len(self.imagesArray))+" images"

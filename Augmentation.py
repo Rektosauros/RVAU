@@ -5,6 +5,8 @@ from tkinter.filedialog import askopenfilename
 import tkinter
 from ImageData import ImageData
 
+
+MIN_MATCH_COUNT = 10
 def getData():
     root = tkinter.Tk()
     root.withdraw()
@@ -39,10 +41,27 @@ def captureVideo():
             matches = bf.match(imagedata.desc,frame_desc)
             matches = sorted(matches, key = lambda x:x.distance)
             # Do Homeography here
-            frame = cv2.drawMatches(imagedata.image,kp1,frame,kp2,matches[:10],0, flags=2)
+            if len(matches)>MIN_MATCH_COUNT:
+                src_pts = np.float32([ kp1[m.queryIdx].pt for m in matches ]).reshape(-1,1,2)
+                dst_pts = np.float32([ kp2[m.trainIdx].pt for m in matches ]).reshape(-1,1,2)
+
+                M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+                matchesMask = mask.ravel().tolist()
+                slices,h,w = imagedata.image.shape
+                pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+                dst = cv2.perspectiveTransform(pts,M)
+                frame = cv2.polylines(frame,[np.int32(dst)],True,255,3, cv2.LINE_AA)
+                draw_params = dict(matchColor = (0,255,0), # draw matches in green color
+                singlePointColor = None,
+                matchesMask = matchesMask, # draw only inliers
+                flags = 2)
+                frame = cv2.drawMatches(imagedata.image,kp1,frame,kp2,matches,0,**draw_params)
+            else:
+                print("Not enough matches are found - %d/%d" % (len(matches),MIN_MATCH_COUNT))
+                matchesMask = None
             cv2.imshow('AR Detection',frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                        break
     cap.release()
     cv2.destroyAllWindows()
 

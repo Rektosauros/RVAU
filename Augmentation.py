@@ -24,19 +24,13 @@ def printPickle(imagedata):
         print(ipoint)
 
 def captureVideo():
-    #cv2.imshow('imagex',imagedata.image)
-    #while(True):
-    #    if cv2.waitKey(1) & 0xFF == ord('q'):
-    #        break
-    #return
     sift = cv2.xfeatures2d.SIFT_create()
     bf = cv2.BFMatcher()
     kp1 = getCVKeypoints(imagedata.kp)
     cap = cv2.VideoCapture(0)
     while(True):
         ret, frame = cap.read()
-        if ret:
-            # Our operations on the frame come here    
+        if ret:    
             kp2, frame_desc = sift.detectAndCompute(frame,None)
             if(kp2 is None or frame_desc is None):
                 continue
@@ -54,10 +48,17 @@ def captureVideo():
                 if(M is None):
                     continue
                 matchesMask = mask.ravel().tolist()
-                h,w,channels = imagedata.image.shape
-                pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+                if(len(imagedata.image.shape)==3):
+                    h,w,channels = imagedata.image.shape
+                else:
+                    h,w = imagedata.image.shape
+                print(h)
+                print(w)    
+                pts = np.float32([[0,0],[0,h-1],[w-1,h-1],[w-1,0],[w/2,h/2]]).reshape(-1,1,2)
                 dst = cv2.perspectiveTransform(pts,M)
-                frame = cv2.polylines(frame,[np.int32(dst)],True,255,3, cv2.LINE_AA)
+                frame = cv2.polylines(frame,[np.int32(dst[0:4])],True,255,3, cv2.LINE_AA)
+                center = np.int32(dst[4])[0]
+                frame = cv2.circle(frame,(center[0],center[1]),10,(0,255,255),-1)
             else:
                 print("Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
                 matchesMask = None
@@ -65,7 +66,7 @@ def captureVideo():
             singlePointColor = None,
             matchesMask = matchesMask, # draw only inliers
             flags = 2)
-            frame = cv2.drawMatches(imagedata.image,kp1,frame,kp2,good,0,**draw_params)
+            #frame = cv2.drawMatches(imagedata.image,kp1,frame,kp2,good,0,**draw_params)
             cv2.imshow('AR Detection',frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                         break

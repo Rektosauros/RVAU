@@ -10,6 +10,7 @@ class Rectangle:
     def __init__(self,point1,point2):
         self.begin=point1
         self.end=point2
+        print(str(point1),str(point2))
     def __str__(self):
         return "Begin:" + str(self.begin) + " End:" + str(self.end)
 
@@ -60,7 +61,7 @@ class CustomQLabel(QLabel):
     def mouseReleaseEvent(self, event):
         if self.inside and self.active and self.pressed:
             self.rectangles.append(Rectangle(self.begin,self.end))
-            interestPoint = InterestPoint(self.begin.x(),self.begin.y(),self.end.x(),self.end.y())
+            interestPoint = InterestPoint(self.begin.x(),self.end.x(),self.begin.y(),self.end.y())
             self.parent().parent().notifyAddedInterestPoint()
             self.deactivate(False)
             QApplication.setOverrideCursor(QtCore.Qt.ArrowCursor)

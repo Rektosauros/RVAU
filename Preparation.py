@@ -113,16 +113,14 @@ class MainUI(QDialog):
     self.imageData.kp=index
     pickle.dump(self.imageData, outfile)
     outfile.close()
-    print(self.imageData.kp)
-    print(self.imageData.desc)
-    for ipoint in self.imageData.ipoints:
-      print(ipoint)
     
- 
+def main():
+  app=QApplication (sys.argv)
+  window=MainUI()
+  window.setWindowTitle('AR Preparation Tool')
+  window.show()
+  sys.exit(app.exec_())
 
+if __name__ == '__main__':
+    main()  
 
-app=QApplication (sys.argv)
-window=MainUI()
-window.setWindowTitle('AR Preparation Tool')
-window.show()
-sys.exit(app.exec_())

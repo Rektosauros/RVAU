@@ -35,11 +35,12 @@ class ImageUI(QDialog):
     options = QFileDialog.Options()
     options |= QFileDialog.DontUseNativeDialog
     filename, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "", "Images (*.jpg *.png)",options=options)
-    self.image.append(cv2.imread(filename))
-    print("New image added to interest point: "+ filename)
-    if self.noImg == True:
-      self.noImg= False
-      self.closeButton.setDisabled(False)
+    if len(filename)>0:
+      self.image.append(cv2.imread(filename))
+      print("New image added to interest point: "+ filename)
+      if self.noImg == True:
+        self.noImg= False
+        self.closeButton.setDisabled(False)
 
   def addNameClicked(self):
     self.IPName = self.imgNameLineEdit.text()

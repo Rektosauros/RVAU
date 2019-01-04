@@ -21,25 +21,27 @@ class MainUI(QDialog):
     loadUi('mainUI.ui',self)
     self.image = None
     self.imageName = None
-    self.imageData = None
+    self.database = []
     self.descriptors = None
     self.keypoints = None
     self.kpImage = None
     self.scanned = False
     self.addedInterestPoint = False
-    self.loadButton.clicked.connect(self.loadClicked)
+    self.loadButton.clicked.connect(self.newImageClicked)
     self.scanButton.clicked.connect(self.scanClicked)
     self.saveButton.clicked.connect(self.saveClicked)
+    self.saveDBButton.clicked.connect(self.saveDBClicked)
     self.addButton.clicked.connect(self.addClicked)
 
   @pyqtSlot()
-  def loadClicked(self):
+  def newImageClicked(self):
     options = QFileDialog.Options()
     options |= QFileDialog.DontUseNativeDialog
-    filename, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "", "Images (*.jpg *.png)",options=options)
+    filename, _ = QFileDialog.getOpenFileName(self,"Find Image", "", "Images (*.jpg *.png)",options=options)
     if filename:
       self.imageName = os.path.splitext(os.path.basename(filename))[0]
     self.loadImage(filename)
+    self.saveDBButton.setEnabled(False)
     self.scanButton.setEnabled(True)
     self.addButton.setEnabled(True)
 
@@ -103,15 +105,31 @@ class MainUI(QDialog):
     self.imgLabel.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
 
   def saveClicked(self):
-    self.imageData = ImageData(self.keypoints, self.descriptors, self.image)
-    self.imageData.setInterestPoints(self.imgLabel.interestPoints)
-    outfile=open(self.imageName,'wb')
+    imageData = ImageData(self.keypoints, self.descriptors, self.image)
+    imageData.setInterestPoints(self.imgLabel.interestPoints)
     index=[]
-    for point in self.imageData.kp:
+    for point in imageData.kp:
       temp=(point.pt, point.size, point.angle, point.response, point.octave, point.class_id)
       index.append(temp)
-    self.imageData.kp=index
-    pickle.dump(self.imageData, outfile)
+    imageData.kp=index
+    self.database.append(imageData)
+    self.saveDBButton.setEnabled(True)
+    self.restartView()
+
+  def restartView(self):
+    self.image = None
+    self.kpImage = None
+    self.imgLabel.emptyData()
+    self.imgLabel.setPixmap(QPixmap(1,1))
+    self.scanned = False
+    self.addedInterestPoint = False
+    self.scanButton.setEnabled(False)
+    self.addButton.setEnabled(False)
+    self.saveButton.setEnabled(False)
+
+  def saveDBClicked(self):
+    outfile=open('databaseAR','wb')
+    pickle.dump(self.database, outfile)
     outfile.close()
     
 def main():

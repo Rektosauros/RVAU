@@ -16,38 +16,44 @@ def getData():
     root.withdraw()
     filename = askopenfilename(title = "Select Preparation Data")
     with open(filename, 'rb') as f:
-        global imagedata
-        imagedata = pickle.load(f)
+        global database
+        database = pickle.load(f)
         f.close()
-        for ipoint in imagedata.ipoints:
-            imagedata.image = cv2.rectangle(imagedata.image,tuple(ipoint.pt2),tuple(ipoint.pt1),(0,0,255))
+       
 
 def captureVideo():
     # Initialize feature matching objects and convert pickled data to original format as needed
     sift = cv2.xfeatures2d.SIFT_create()
     bf = cv2.BFMatcher()
-    kp1 = getCVKeypoints(imagedata.kp)
     # Start video capture and loop for continuous frame capturing
     cap = cv2.VideoCapture(0)
     imgChangeCount=0
     ImgIndex=0
     while(True):
         ret, frame = cap.read()
-        if ret:  
-            # Match natural features of original image with captured video frame  
+        if ret: 
             kp2, frame_desc = sift.detectAndCompute(frame,None)
             if(kp2 is None or frame_desc is None):
                 continue
-            matches = bf.knnMatch(imagedata.desc,frame_desc, k=2)
-            if(len(matches)==0):
-                continue
-            # Apply ratio test to filter bad matches out
-            good = filterMatches(matches)
+             # Find image with best matches in database
+            bestMatches = 0
+            imagedata=None
+            good_matches = []
+            for entry in database:
+                kp1 = getCVKeypoints(entry.kp)
+                matches = bf.knnMatch(entry.desc,frame_desc, k=2)
+                if(len(matches)==0):
+                    continue
+                # Apply ratio test to filter bad matches out
+                good_matches = filterMatches(matches)
+                if(len(good_matches)>bestMatches):
+                    imagedata=entry
+                    bestMatches=len(good_matches)
             # If enough matches
-            if len(good)>MIN_MATCH_COUNT:
+            if len(good_matches)>MIN_MATCH_COUNT:
                 # Calculate Homography between keypoints in the original image and the matching keypoints in frame
-                src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
-                dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
+                src_pts = np.float32([ kp1[m.queryIdx].pt for m in good_matches ]).reshape(-1,1,2)
+                dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good_matches ]).reshape(-1,1,2)
                 M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
                 # Check if Homography matrix was found
                 if(M is None):
@@ -80,9 +86,10 @@ def captureVideo():
                         minDistance = tempDistance
                         closestIPoint = np.int32(dst[idx])[0]
                         index = idx
-                # Nearest interest point processing
                 if(closestIPoint is not None):
+                    # Circle on interest point itself
                     frame = cv2.circle(frame,(closestIPoint[0],closestIPoint[1]),10,(0,255,0),-1)
+                    # If interest point has multiple associated images check if it's time to change image
                     if(imgChangeCount>=IMAGE_CHANGE_COUNT):
                         imgChangeCount=0
                         ImgIndex=updateImgIndex(imagedata.ipoints[idx].imagesArray,ImgIndex)
@@ -97,9 +104,8 @@ def captureVideo():
                     # Drawing name of interest point on screen
                     font = cv2.FONT_HERSHEY_PLAIN
                     cv2.putText(frame,imagedata.ipoints[idx].InterestPointName,(fw-201,fh-170), font, 1,(1,1,1),1,cv2.LINE_AA)
-                    #frame = cv2.rectangle(frame,(fw-1,fh-1),(fw-250,fh-150),(0,255,0))
             else:
-                print("Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
+                print("Not enough matches are found - %d/%d" % (len(good_matches),MIN_MATCH_COUNT))
             cv2.imshow('AR Detection',frame)
             imgChangeCount+=1
             if cv2.waitKey(1) & 0xFF == ord('q'):

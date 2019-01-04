@@ -36,7 +36,11 @@ class CustomQLabel(QLabel):
         self.pressed=False
         self.begin = None
         self.end = None
-           
+
+    def emptyData(self):
+        self.rectangles=[]
+        self.interestPoints=[]
+
     def paintEvent(self, event):
         super(CustomQLabel, self).paintEvent(event)
         qp = QtGui.QPainter(self)

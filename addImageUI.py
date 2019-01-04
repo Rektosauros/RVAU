@@ -44,6 +44,8 @@ class ImageUI(QDialog):
 
   def addNameClicked(self):
     self.IPName = self.imgNameLineEdit.text()
+    if(len(self.IPName)==0):
+      return
     self.imgNameLineEdit.setDisabled(True)
     self.addImgButton.setDisabled(False)
 

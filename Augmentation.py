@@ -19,6 +19,9 @@ def getData():
         global database
         database = pickle.load(f)
         f.close()
+    global compass
+    compass = cv2.imread("compass4.jpg", cv2.IMREAD_UNCHANGED)
+    compass = image_resize(compass, height=40)
        
 
 def captureVideo():
@@ -104,6 +107,12 @@ def captureVideo():
                     # Drawing name of interest point on screen
                     font = cv2.FONT_HERSHEY_PLAIN
                     cv2.putText(frame,imagedata.ipoints[idx].InterestPointName,(fw-201,fh-170), font, 1,(1,1,1),1,cv2.LINE_AA)
+
+                if not int(image_center[1]-compass.shape[0]/2) < 0 and not int(image_center[1]+compass.shape[0]/2) > frame.shape[0] and not image_center[0]-compass.shape[1] < 0 and not image_center[0] > frame.shape[1]:
+                    
+                    frame[int(image_center[1]-compass.shape[0]/2):int(image_center[1]+compass.shape[0]/2), image_center[0]-compass.shape[1]:image_center[0], :] = \
+                    frame[int(image_center[1]-compass.shape[0]/2):int(image_center[1]+compass.shape[0]/2), image_center[0]-compass.shape[1]:image_center[0], :] * (1 - compass[:, :, 3:] / np.iinfo(compass.dtype).max) + \
+                    compass[:, :, :3] * (compass[:, :, 3:] / np.iinfo(compass.dtype).max)
             else:
                 print("Not enough matches are found - %d/%d" % (len(good_matches),MIN_MATCH_COUNT))
             cv2.imshow('AR Detection',frame)
@@ -179,6 +188,33 @@ def printPickle(imagedata):
 
 def calcEuclidean(a,b):
     return math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
+
+def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
+    # initialize the dimensions of the image to be resized and
+    # grab the image size
+    dim = None
+    (h, w) = image.shape[:2]
+    # if both the width and height are None, then return the
+    # original image
+    if width is None and height is None:
+        return image
+    # check to see if the width is None
+    if width is None:
+        # calculate the ratio of the height and construct the
+        # dimensions
+        r = height / float(h)
+        dim = (int(w * r), height)
+    # otherwise, the height is None
+    else:
+        # calculate the ratio of the width and construct the
+        # dimensions
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    # resize the image
+    resized = cv2.resize(image, dim, interpolation = inter)
+    # return the resized image
+    return resized
 
 def main():
     getData()

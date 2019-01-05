@@ -40,6 +40,8 @@ class MainUI(QDialog):
     filename, _ = QFileDialog.getOpenFileName(self,"Find Image", "", "Images (*.jpg *.png)",options=options)
     if filename:
       self.imageName = os.path.splitext(os.path.basename(filename))[0]
+    else:
+      return
     self.loadImage(filename)
     self.saveDBButton.setEnabled(False)
     self.scanButton.setEnabled(True)

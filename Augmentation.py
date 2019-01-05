@@ -6,6 +6,7 @@ import pickle
 from tkinter.filedialog import askopenfilename
 import tkinter
 from ImageData import ImageData
+from InterestPoint import InterestPoint
 
 
 

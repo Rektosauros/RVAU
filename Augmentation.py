@@ -28,8 +28,12 @@ def captureVideo():
     # Initialize feature matching objects and convert pickled data to original format as needed
     sift = cv2.xfeatures2d.SIFT_create()
     bf = cv2.BFMatcher()
+    if(debug):
+        print("Initializing feature matching objects")
     # Start video capture and loop for continuous frame capturing
     cap = cv2.VideoCapture(0)
+    if(debug):
+        print("Starting camera video capture")
     imgChangeCount=0
     ImgIndex=0
     while(True):
@@ -42,6 +46,8 @@ def captureVideo():
             bestMatches = 0
             imagedata=None
             good_matches = []
+            if(debug):
+                print("Checking which image from the database matches best with the current video frame")
             for entry in database:
                 kp1 = getCVKeypoints(entry.kp)
                 matches = bf.knnMatch(entry.desc,frame_desc, k=2)
@@ -58,6 +64,8 @@ def captureVideo():
                 src_pts = np.float32([ kp1[m.queryIdx].pt for m in good_matches ]).reshape(-1,1,2)
                 dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good_matches ]).reshape(-1,1,2)
                 M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+                if(debug):
+                    print("Calculated homography between original image in database and current video frame")
                 # Check if Homography matrix was found
                 if(M is None):
                     continue
@@ -76,9 +84,13 @@ def captureVideo():
                 # Calculate coordinates of the corners and center of the map based on homography matrix
                 pts = np.float32([centers]).reshape(-1,1,2)
                 dst = cv2.perspectiveTransform(pts,M)
+                if(debug):
+                    print("Applying Homography to image center and interest point centers to get corresponding coordinates in frame")
                 # Draw yellow circle in center of image
                 image_center = np.int32(dst[-1])[0]
                 frame = cv2.circle(frame,(image_center[0],image_center[1]),10,(0,255,255),-1)
+                if(debug):
+                    print("Drawing center of image in the frame")
                 # Check for nearest interest point
                 minDistance=sys.maxsize
                 index=-1
@@ -89,6 +101,8 @@ def captureVideo():
                         minDistance = tempDistance
                         closestIPoint = np.int32(dst[idx])[0]
                         index = idx
+                if(debug):
+                     print("Calculated nearest interest point to the center")
                 if(closestIPoint is not None):
                     # Circle on interest point itself
                     frame = cv2.circle(frame,(closestIPoint[0],closestIPoint[1]),10,(0,255,0),-1)
@@ -107,14 +121,18 @@ def captureVideo():
                     # Drawing name of interest point on screen
                     font = cv2.FONT_HERSHEY_PLAIN
                     cv2.putText(frame,imagedata.ipoints[idx].InterestPointName,(fw-201,fh-170), font, 1,(1,1,1),1,cv2.LINE_AA)
-
+                    if(debug):
+                        print("Drew interest point as green circle and corresponding info box")
+                    # Drawing compass next to the center (compass doesn't rotate with camera movement)
                 if not int(image_center[1]-compass.shape[0]/2) < 0 and not int(image_center[1]+compass.shape[0]/2) > frame.shape[0] and not image_center[0]-compass.shape[1] < 0 and not image_center[0] > frame.shape[1]:
-                    
                     frame[int(image_center[1]-compass.shape[0]/2):int(image_center[1]+compass.shape[0]/2), image_center[0]-compass.shape[1]:image_center[0], :] = \
                     frame[int(image_center[1]-compass.shape[0]/2):int(image_center[1]+compass.shape[0]/2), image_center[0]-compass.shape[1]:image_center[0], :] * (1 - compass[:, :, 3:] / np.iinfo(compass.dtype).max) + \
                     compass[:, :, :3] * (compass[:, :, 3:] / np.iinfo(compass.dtype).max)
+                    if(debug):
+                        print("Drew compass near the center")
             else:
-                print("Not enough matches are found - %d/%d" % (len(good_matches),MIN_MATCH_COUNT))
+                if debug:
+                    print("Not enough matches are found - %d/%d" % (len(good_matches),MIN_MATCH_COUNT))
             cv2.imshow('AR Detection',frame)
             imgChangeCount+=1
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -217,6 +235,11 @@ def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
     return resized
 
 def main():
+    global debug
+    if len(sys.argv) > 1 and sys.argv[1] == 'debug':
+        debug = True
+    else:
+        debug = False
     getData()
     captureVideo()
 

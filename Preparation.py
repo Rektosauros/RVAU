@@ -81,7 +81,7 @@ class MainUI(QDialog):
     self.imgLabel.adjustSize()
     self.imgLabel.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
     
-
+  # Get Keypoint and Descriptors of the image
   def scanClicked(self):
     sift = cv2.xfeatures2d.SIFT_create()
     self.keypoints, self.descriptors =  sift.detectAndCompute(self.image,None)

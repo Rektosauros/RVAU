@@ -27,10 +27,12 @@ class CustomQLabel(QLabel):
         self.interestPoints = []
         self.show()
 
+    # Activate rectangle drawing mode
     def activate(self):
         self.active=True
         QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
 
+    # Deactivate rectangle drawing mode
     def deactivate(self,active):
         self.active=active
         self.pressed=False
@@ -41,6 +43,7 @@ class CustomQLabel(QLabel):
         self.rectangles=[]
         self.interestPoints=[]
 
+    # Draw rectangles on every frame
     def paintEvent(self, event):
         super(CustomQLabel, self).paintEvent(event)
         qp = QtGui.QPainter(self)
@@ -51,17 +54,20 @@ class CustomQLabel(QLabel):
         for rec in self.rectangles :
             qp.drawRect(QtCore.QRect(rec.begin, rec.end))       
 
+    # Start drawing rectangle on mouse press by defining first rectangle point
     def mousePressEvent(self, event):
         if self.inside and self.active: 
             self.begin = event.pos()
             self.pressed=True
             self.update()
 
+    # Update the rectangle second point's coordinates as the mouse moves
     def mouseMoveEvent(self, event):
         if self.pressed:
             self.end = event.pos()
             self.update()
 
+    # Finish the creation of the rectangle on mouse release and show dialogues to add info to new interest point
     def mouseReleaseEvent(self, event):
         if self.inside and self.active and self.pressed:
             self.rectangles.append(Rectangle(self.begin,self.end))
@@ -77,12 +83,13 @@ class CustomQLabel(QLabel):
             self.interestPoints.append(interestPoint)
             print(interestPoint.InterestPointName)
 
+    # Mouse enters the drawing area
     def enterEvent(self, event):
         QLabel.enterEvent(self, event)
         self.pressed=False
         self.inside=True
            
-
+    # Mouse leaves the drawing area
     def leaveEvent(self, event):
         QLabel.leaveEvent(self, event)
         self.deactivate(self.active)

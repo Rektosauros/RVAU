@@ -53,6 +53,7 @@ class MainUI(QDialog):
     if self.scanned:
       self.saveButton.setEnabled(True)
 
+  # Load image into the program
   def loadImage(self, fname):
     self.scanned=False
     self.addedInterestPoint=False
@@ -66,9 +67,9 @@ class MainUI(QDialog):
     self.imgLabel.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
     self.displayImage()
 
+  # Display loaded image on gui
   def displayImage(self):
     qformat = QImage.Format_Indexed8
-
     if len(self.image.shape)==3: #rows[0],cols[1],channels[2]
       if(self.image.shape[2])==4:
         qformat=QImage.Format_RGBA8888
@@ -91,6 +92,7 @@ class MainUI(QDialog):
     if self.addedInterestPoint:
       self.saveButton.setEnabled(True)
 
+  # Display the image with the scanned keypoints drawn
   def displayScannedImage(self):
     qformat = QImage.Format_Indexed8
     if len(self.kpImage.shape)==3: #rows[0],cols[1],channels[2]
@@ -104,6 +106,7 @@ class MainUI(QDialog):
     self.imgLabel.setPixmap(QPixmap.fromImage(img))
     self.imgLabel.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
 
+  # Add an image alongside it's scanned features and interest points to database
   def saveClicked(self):
     imageData = ImageData(self.keypoints, self.descriptors, self.image)
     imageData.setInterestPoints(self.imgLabel.interestPoints)
@@ -127,6 +130,7 @@ class MainUI(QDialog):
     self.addButton.setEnabled(False)
     self.saveButton.setEnabled(False)
 
+  # Save database to pickle
   def saveDBClicked(self):
     outfile=open('databaseAR','wb')
     pickle.dump(self.database, outfile)

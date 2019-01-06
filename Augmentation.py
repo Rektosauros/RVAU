@@ -46,19 +46,23 @@ def captureVideo():
              # Find image with best matches in database
             bestMatches = 0
             imagedata=None
+            kp1=None
             good_matches = []
             if(debug):
                 print("Checking which image from the database matches best with the current video frame")
             for entry in database:
-                kp1 = getCVKeypoints(entry.kp)
+                temp_matches=[]
+                temp_kp1 = getCVKeypoints(entry.kp)
                 matches = bf.knnMatch(entry.desc,frame_desc, k=2)
                 if(len(matches)==0):
                     continue
                 # Apply ratio test to filter bad matches out
-                good_matches = filterMatches(matches)
-                if(len(good_matches)>bestMatches):
+                temp_matches = filterMatches(matches)
+                if(len(temp_matches)>bestMatches):
                     imagedata=entry
-                    bestMatches=len(good_matches)
+                    bestMatches=len(temp_matches)
+                    good_matches=temp_matches
+                    kp1=temp_kp1
             # If enough matches
             if len(good_matches)>MIN_MATCH_COUNT:
                 # Calculate Homography between keypoints in the original image and the matching keypoints in frame
